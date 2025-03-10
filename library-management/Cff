@@ -1,0 +1,69 @@
+erDiagram
+    %% Entities
+    USER {
+      uint ID PK
+      string Name
+      string Email
+      string Contact
+      string Role "owner, admin, user"
+      string Password
+    }
+    
+    LIBRARY {
+      uint ID PK
+      string Name "unique, not null"
+    }
+    
+    USER_LIBRARY {
+      uint UserID PK "FK to USER.ID"
+      uint LibraryID PK "FK to LIBRARY.ID"
+    }
+    
+    BOOK {
+      uint ID PK
+      string ISBN "not null"
+      string Title "not null"
+      string Authors
+      string Publisher
+      string Version
+      int TotalCopies
+      int AvailableCopies
+      uint LibraryID FK "FK to LIBRARY.ID"
+    }
+    
+    REQUEST_EVENT {
+      uint ID PK
+      string BookID "refers to Book.ISBN"
+      uint LibraryID FK "FK to LIBRARY.ID"
+      uint ReaderID FK "FK to USER.ID"
+      int64 RequestDate "not null"
+      int64 ApprovalDate "nullable"
+      uint ApproverID FK "FK to USER.ID (admin)"
+      string RequestType "check: 'issue', 'return'"
+    }
+    
+    ISSUE_REGISTRY {
+      uint ID PK
+      string ISBN "refers to Book.ISBN"
+      uint ReaderID FK "FK to USER.ID"
+      uint IssueApproverID FK "FK to USER.ID (admin)"
+      string IssueStatus "varchar(50)"
+      int64 IssueDate "not null"
+      int64 ExpectedReturnDate "not null"
+      int64 ReturnDate "default 0"
+      uint ReturnApproverID FK "FK to USER.ID (admin)"
+    }
+    
+    %% Relationships
+    USER ||--o{ USER_LIBRARY : "associated with"
+    LIBRARY ||--o{ USER_LIBRARY : "includes"
+    
+    LIBRARY ||--|{ BOOK : "contains"
+    
+    BOOK ||--o{ REQUEST_EVENT : "has request events"
+    USER ||--o{ REQUEST_EVENT : "initiates"
+    USER ||--o{ REQUEST_EVENT : "approves"
+    
+    BOOK ||--o{ ISSUE_REGISTRY : "has issue records"
+    USER ||--o{ ISSUE_REGISTRY : "issues/receives"
+    USER ||--o{ ISSUE_REGISTRY : "approves issues"
